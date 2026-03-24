@@ -151,8 +151,10 @@ const Playground = () => {
             setTimeout(() => fitAddonInstance.fit(), 50);
             window.addEventListener('resize', () => fitAddonInstance.fit());
 
-            const WS_URL = 'ws://localhost:5000'; 
-            ws = new WebSocket(WS_URL);
+            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const WS_URL = API_URL.replace('http', 'ws').replace('/api', '');
+
+const ws = new WebSocket(WS_URL);
             socketRef.current = ws;
 
             ws.onopen = () => {
