@@ -1,0 +1,1 @@
+mongodb+srv://krishna97360:<db_password>@cluster0.ehbnsbx.mongodb.net/?appName=Cluster0
