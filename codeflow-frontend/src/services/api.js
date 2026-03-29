@@ -1,6 +1,5 @@
 import axios from 'axios';
 
-// Create a central instance of axios
 const api = axios.create({
     baseURL: process.env.NEXT_PUBLIC_API_URL,
     headers: {
@@ -8,18 +7,26 @@ const api = axios.create({
     }
 });
 
-/**
- * We intercept every response. If we get a 401 Unauthorized error, it means
- * the token is invalid or expired. We'll log the user out and redirect to the
- * login page. This prevents the app from staying in a broken state.
- */
+// ✅ FIX: Attach the auth token to EVERY outgoing request.
+// Without this, every API call returns 401 and the user gets logged out.
+api.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers['x-auth-token'] = token;
+        }
+        return config;
+    },
+    (error) => Promise.reject(error)
+);
+
+// Handle 401 Unauthorized — token expired or invalid
 api.interceptors.response.use(
     (res) => res,
     (err) => {
-        if (err.response.status === 401) {
+        if (err.response?.status === 401) {
             localStorage.removeItem('token');
             window.location.href = '/login';
-            // You might also dispatch a logout action here if using a state manager
         }
         return Promise.reject(err);
     }

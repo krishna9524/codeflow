@@ -123,25 +123,46 @@ const ProblemPage = () => {
     const handleRunCode = async () => {
         if (!problem?.sampleTestCases?.length) return toast.error("No sample cases available.");
         setRunning(true);
-        setResult({ type: 'run', status: `Running...`, cases: [] });
+        setResult({ type: 'run', status: `Compiling & Running...`, cases: [] });
         
         try {
-            const runPromises = problem.sampleTestCases.map(tc =>
-                runAgainstSamples(problem._id, code, language, JSON.stringify(tc.input))
-            );
-            const runResponses = await Promise.all(runPromises);
+            const cases = [];
+            
+            // 👉 THE FIX: We use a standard 'for' loop instead of Promise.all
+            // This forces the frontend to wait for Test Case 1 to finish before compiling Test Case 2.
+            // This saves your Render server from CPU crashing!
+            for (let i = 0; i < problem.sampleTestCases.length; i++) {
+                const tc = problem.sampleTestCases[i];
+                
+                // Update the UI so the user knows it hasn't frozen!
+                setResult(prev => ({ 
+                    ...prev, 
+                    status: `Running Case ${i + 1} of ${problem.sampleTestCases.length}...` 
+                }));
 
-            const cases = problem.sampleTestCases.map((tc, i) => {
-                const resultData = runResponses[i].data;
+                const response = await runAgainstSamples(problem._id, code, language, JSON.stringify(tc.input));
+                const resultData = response.data;
+                
                 const rawOutput = resultData.output?.trim() || resultData.error || 'Execution Error';
                 const expectedOutputString = JSON.stringify(tc.output);
+                
                 let isCorrect = false;
-                try { isCorrect = JSON.stringify(JSON.parse(rawOutput)) === expectedOutputString; } 
-                catch { isCorrect = rawOutput === String(tc.output); }
+                try { 
+                    isCorrect = JSON.stringify(JSON.parse(rawOutput)) === expectedOutputString; 
+                } catch { 
+                    isCorrect = rawOutput === String(tc.output); 
+                }
+                
                 if (resultData.status !== 'Accepted') isCorrect = false;
 
-                return { input: JSON.stringify(tc.input), expected: expectedOutputString, output: rawOutput, isCorrect };
-            });
+                cases.push({ 
+                    input: JSON.stringify(tc.input), 
+                    expected: expectedOutputString, 
+                    output: rawOutput, 
+                    isCorrect 
+                });
+            }
+
             setResult({ type: 'run', status: 'Finished', cases });
         } catch (error) {
             setResult({ type: 'error', status: 'Error', output: error.response?.data?.error || 'Execution failed.' });
@@ -335,6 +356,7 @@ const ProblemPage = () => {
                 problem={problem} 
                 currentCode={code} 
                 language={language} 
+                lastResult={result} 
             />
         </div>
     );

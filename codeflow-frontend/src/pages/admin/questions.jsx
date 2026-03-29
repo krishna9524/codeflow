@@ -5,7 +5,6 @@ import { FaEdit, FaTrash, FaPlus, FaFileUpload, FaCopy } from 'react-icons/fa';
 
 import AdminLayout from '@/components/AdminLayout';
 import { Button } from '@/components/ui/button';
-// FIX: Import createBulkQuestions
 import { getAllQuestions, createQuestion, updateQuestion, deleteQuestion, getQuestionByIdForAdmin, createBulkQuestions } from '@/services/problemService';
 import { getAllCourses } from '@/services/courseService';
 import { getAllTopics } from '@/services/topicService';
@@ -30,14 +29,10 @@ const initialFormState = {
 
 const AdminQuestions = () => {
     const [questions, setQuestions] = useState([]);
-    
-    // Modal states
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isBulkModalOpen, setIsBulkModalOpen] = useState(false); // NEW: State for bulk modal
-    
+    const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
     const [currentQuestion, setCurrentQuestion] = useState(initialFormState);
-    const [bulkJson, setBulkJson] = useState(''); // NEW: State for JSON input
-    
+    const [bulkJson, setBulkJson] = useState('');
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(true);
 
@@ -51,7 +46,6 @@ const AdminQuestions = () => {
         setLoading(true);
         try {
             const res = await getAllQuestions();
-            // Using fallback to empty array to prevent crashes
             setQuestions(res.data || []);
         } catch (error) {
             toast.error('Failed to fetch questions.');
@@ -95,7 +89,6 @@ const AdminQuestions = () => {
             }
         }
     }, [router.isReady, router.query, questions]);
-
 
     const handleOpenModal = async (question = null) => {
         if (question) {
@@ -205,7 +198,7 @@ const AdminQuestions = () => {
         }
     };
 
-const handleBulkSubmit = async () => {
+    const handleBulkSubmit = async () => {
         try {
             const parsedData = JSON.parse(bulkJson);
             if (!Array.isArray(parsedData)) {
@@ -225,7 +218,6 @@ const handleBulkSubmit = async () => {
             console.error(error);
             const errorData = error.response?.data;
             
-            // FIX: Show specific lookup errors (e.g., "Course 'Java' not found")
             if (errorData?.errors && Array.isArray(errorData.errors)) {
                 toast.error(
                     <div>
@@ -243,7 +235,6 @@ const handleBulkSubmit = async () => {
         }
     };
 
-    // Helper to copy a template
     const copyTemplate = () => {
         const template = [
             {
@@ -263,7 +254,12 @@ const handleBulkSubmit = async () => {
         toast.success("Template copied to clipboard!");
     };
 
-    const difficultyColor = { 'Easy': 'text-green-400', 'Medium': 'text-yellow-400', 'Hard': 'text-red-400' };
+    // Premium Badges for Difficulty
+    const difficultyColor = { 
+        'Easy': 'text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200 text-xs font-bold', 
+        'Medium': 'text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200 text-xs font-bold', 
+        'Hard': 'text-rose-700 bg-rose-50 px-2.5 py-1 rounded-md border border-rose-200 text-xs font-bold' 
+    };
     
     if (loading) {
         return <AdminLayout><Spinner /></AdminLayout>;
@@ -271,151 +267,208 @@ const handleBulkSubmit = async () => {
 
     return (
         <AdminLayout>
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold text-white">Problem Management</h1>
+            <div className="flex justify-between items-center mb-8">
+                <h1 className="text-3xl font-extrabold text-slate-800">Problem Management</h1>
                 <div className="flex gap-3">
-                    {/* NEW: Bulk Upload Button */}
-                    <Button variant="outline" onClick={() => setIsBulkModalOpen(true)} className="border-blue-500 text-blue-400 hover:bg-blue-500/10">
+                    <Button variant="outline" onClick={() => setIsBulkModalOpen(true)} className="border-indigo-200 text-indigo-600 hover:bg-indigo-50 shadow-sm bg-white">
                         <FaFileUpload className="mr-2"/> Import JSON
                     </Button>
-                    <Button onClick={() => handleOpenModal()}>
+                    <Button onClick={() => handleOpenModal()} className="bg-indigo-600 hover:bg-indigo-700 shadow-md text-white">
                         <FaPlus className="mr-2"/> Add New Question
                     </Button>
                 </div>
             </div>
             
-            <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
-                <table className="w-full text-left">
-                    <thead className="border-b border-slate-700">
-                        <tr>
-                            <th className="p-4 text-sm font-semibold text-slate-300">Title</th>
-                            <th className="p-4 text-sm font-semibold text-slate-300">Difficulty</th>
-                            <th className="p-4 text-sm font-semibold text-slate-300">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {questions.map(q => (
-                            <tr key={q._id} className="border-b border-slate-800">
-                                <td className="p-4 text-slate-200">{q.title}</td>
-                                <td className={`p-4 font-semibold ${difficultyColor[q.difficulty]}`}>{q.difficulty}</td>
-                                <td className="p-4 flex space-x-4">
-                                    <button onClick={() => handleOpenModal(q)} className="text-yellow-400 hover:text-yellow-300"><FaEdit size={18} /></button>
-                                    <button onClick={() => handleDelete(q._id)} className="text-red-500 hover:text-red-400"><FaTrash size={18} /></button>
-                                </td>
+            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="bg-slate-50 border-b border-slate-200">
+                                <th className="p-4 text-sm font-bold text-slate-600 uppercase tracking-wider rounded-tl-xl">Title</th>
+                                <th className="p-4 text-sm font-bold text-slate-600 uppercase tracking-wider">Difficulty</th>
+                                <th className="p-4 text-sm font-bold text-slate-600 uppercase tracking-wider rounded-tr-xl">Actions</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {questions.map((q, index) => (
+                                <tr key={q._id} className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors">
+                                    <td className="p-4 text-slate-800 font-medium">{q.title}</td>
+                                    <td className="p-4">
+                                        <span className={difficultyColor[q.difficulty]}>{q.difficulty}</span>
+                                    </td>
+                                    <td className="p-4 flex gap-2">
+                                        <button onClick={() => handleOpenModal(q)} className="p-2 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors" title="Edit">
+                                            <FaEdit size={16} />
+                                        </button>
+                                        <button onClick={() => handleDelete(q._id)} className="p-2 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors" title="Delete">
+                                            <FaTrash size={16} />
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                            {questions.length === 0 && (
+                                <tr>
+                                    <td colSpan="3" className="p-8 text-center text-slate-500">No questions found. Click "Add New Question" to create one.</td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
-            {/* --- NEW: Bulk Import Modal --- */}
+            {/* --- Bulk Import Modal --- */}
             {isBulkModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center z-50 p-4">
-                    <div className="bg-slate-800 p-6 rounded-lg shadow-xl w-full max-w-4xl border border-slate-700 flex flex-col h-[80vh]">
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-2xl font-bold text-white">Bulk Import Questions</h2>
-                            <Button variant="outline" size="sm" onClick={copyTemplate} className="text-xs">
-                                <FaCopy className="mr-2"/> Copy JSON Template
+                <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex justify-center items-center z-50 p-4">
+                    <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-4xl border border-slate-200 flex flex-col h-[80vh] animate-in zoom-in-95 duration-200">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-2xl font-bold text-slate-800">Bulk Import Questions</h2>
+                            <Button variant="outline" size="sm" onClick={copyTemplate} className="text-xs border-slate-200 shadow-sm hover:bg-slate-50">
+                                <FaCopy className="mr-2 text-slate-500"/> Copy JSON Template
                             </Button>
                         </div>
                         
-                        <p className="text-slate-400 text-sm mb-2">
-                            Paste a JSON array of question objects below. Ensure you use valid <strong>Course IDs</strong> and <strong>Topic IDs</strong> from your database.
+                        <p className="text-slate-600 text-sm mb-4 bg-blue-50 p-3 rounded-lg border border-blue-100">
+                            Paste a JSON array of question objects below. Ensure you use valid <strong className="text-blue-800">Course IDs</strong> and <strong className="text-blue-800">Topic IDs</strong> from your database.
                         </p>
 
                         <textarea 
-                            className="flex-grow w-full p-4 bg-slate-900 border border-slate-600 rounded font-mono text-sm text-slate-300 resize-none focus:ring-2 focus:ring-blue-500 outline-none"
-                            placeholder='[
-  {
-    "title": "Problem 1",
-    "description": "...",
-    "course": "65f...",
-    ...
-  },
-  ...
-]'
+                            className="flex-grow w-full p-4 bg-slate-50 border border-slate-300 rounded-xl font-mono text-sm text-slate-800 shadow-inner resize-none focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
+                            placeholder='[ { "title": "Problem 1", ... } ]'
                             value={bulkJson}
                             onChange={(e) => setBulkJson(e.target.value)}
                         ></textarea>
 
-                        <div className="flex justify-end gap-3 mt-4">
-                            <Button variant="secondary" onClick={() => setIsBulkModalOpen(false)}>Cancel</Button>
-                            <Button onClick={handleBulkSubmit} disabled={!bulkJson.trim()}>Upload Questions</Button>
+                        <div className="flex justify-end gap-3 mt-6">
+                            <Button variant="outline" onClick={() => setIsBulkModalOpen(false)} className="border-slate-200">Cancel</Button>
+                            <Button onClick={handleBulkSubmit} disabled={!bulkJson.trim()} className="bg-indigo-600 hover:bg-indigo-700 text-white">Upload Questions</Button>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* --- Existing Create/Edit Modal --- */}
+            {/* --- Create/Edit Modal --- */}
             {isModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center z-50 p-4">
-                    <form onSubmit={handleSubmit} className="bg-slate-800 p-6 rounded-lg shadow-xl w-full max-w-7xl h-[95vh] flex flex-col border border-slate-700">
-                        <h2 className="text-2xl font-bold mb-4 text-white flex-shrink-0">{isEditing ? 'Edit Question' : 'Add New Question'}</h2>
-                        <div className="overflow-y-auto pr-4 grid grid-cols-1 md:grid-cols-3 gap-x-6">
+                <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex justify-center items-center z-50 p-4">
+                    <form onSubmit={handleSubmit} className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-7xl h-[95vh] flex flex-col border border-slate-200 animate-in zoom-in-95 duration-200">
+                        <h2 className="text-2xl font-bold mb-6 text-slate-800 flex-shrink-0">{isEditing ? 'Edit Question' : 'Add New Question'}</h2>
+                        
+                        <div className="overflow-y-auto pr-4 grid grid-cols-1 md:grid-cols-3 gap-x-8 pb-4 custom-scrollbar">
+                            
                             {/* --- Column 1: Core Details --- */}
-                            <div className="flex flex-col gap-4">
-                                <h3 className="text-xl text-blue-400 font-semibold border-b border-slate-700 pb-2">Categorization</h3>
+                            <div className="flex flex-col gap-5">
+                                <div className="border-b border-slate-200 pb-2 mb-2">
+                                    <h3 className="text-lg text-indigo-700 font-bold">Categorization</h3>
+                                </div>
                                 <div>
-                                    <label className="block mb-1 text-sm text-slate-400">Course</label>
-                                    <select name="course" value={currentQuestion.course} onChange={handleCourseChange} className="w-full p-2 bg-slate-700 border border-slate-600 rounded text-white" required>
+                                    <label className="block mb-1.5 text-sm font-semibold text-slate-700">Course</label>
+                                    <select name="course" value={currentQuestion.course} onChange={handleCourseChange} className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-sm transition-all" required>
                                         <option value="">-- Select Course --</option>
                                         {allCourses.map(course => (<option key={course._id} value={course._id}>{course.title}</option>))}
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block mb-1 text-sm text-slate-400">Topic</label>
-                                    <select name="topic" value={currentQuestion.topic} onChange={handleTopicChange} className="w-full p-2 bg-slate-700 border border-slate-600 rounded text-white" required disabled={!currentQuestion.course && filteredTopics.length === 0}>
+                                    <label className="block mb-1.5 text-sm font-semibold text-slate-700">Topic</label>
+                                    <select name="topic" value={currentQuestion.topic} onChange={handleTopicChange} className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-sm transition-all" required disabled={!currentQuestion.course && filteredTopics.length === 0}>
                                         <option value="">-- Select Topic --</option>
                                         {filteredTopics.map(topic => (<option key={topic._id} value={topic._id}>{topic.title}</option>))}
                                     </select>
                                 </div>
-                                <h3 className="text-xl text-blue-400 font-semibold border-b border-slate-700 pb-2 mt-4">Problem Details</h3>
-                                <div><label className="block mb-1 text-sm text-slate-400">Title</label><input type="text" name="title" value={currentQuestion.title} onChange={handleChange} className="w-full p-2 bg-slate-700 border border-slate-600 rounded text-white" required /></div>
-                                <div><label className="block mb-1 text-sm text-slate-400">Difficulty</label><select name="difficulty" value={currentQuestion.difficulty} onChange={handleChange} className="w-full p-2 bg-slate-700 border border-slate-600 rounded text-white"><option>Easy</option><option>Medium</option><option>Hard</option></select></div>
-                                <div><label className="block mb-1 text-sm text-slate-400">Description (Markdown/HTML)</label><textarea name="description" value={currentQuestion.description} onChange={handleChange} className="w-full p-2 bg-slate-700 border border-slate-600 rounded text-white" rows="12" required></textarea></div>
+
+                                <div className="border-b border-slate-200 pb-2 mb-2 mt-4">
+                                    <h3 className="text-lg text-indigo-700 font-bold">Problem Details</h3>
+                                </div>
+                                <div>
+                                    <label className="block mb-1.5 text-sm font-semibold text-slate-700">Title</label>
+                                    <input type="text" name="title" value={currentQuestion.title} onChange={handleChange} className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-sm transition-all" required />
+                                </div>
+                                <div>
+                                    <label className="block mb-1.5 text-sm font-semibold text-slate-700">Difficulty</label>
+                                    <select name="difficulty" value={currentQuestion.difficulty} onChange={handleChange} className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-sm transition-all">
+                                        <option>Easy</option>
+                                        <option>Medium</option>
+                                        <option>Hard</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block mb-1.5 text-sm font-semibold text-slate-700">Description (Markdown/HTML)</label>
+                                    <textarea name="description" value={currentQuestion.description} onChange={handleChange} className="w-full p-3 bg-slate-50 border border-slate-300 rounded-lg text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-inner transition-all" rows="12" required></textarea>
+                                </div>
                             </div>
+
                             {/* --- Column 2: Technical Details --- */}
-                            <div className="flex flex-col gap-4">
-                                <h3 className="text-xl text-blue-400 font-semibold border-b border-slate-700 pb-2">Test Cases</h3>
-                                <div><label className="block mb-1 text-sm text-slate-400">Sample Test Cases (JSON)</label><textarea name="sampleTestCases" value={currentQuestion.sampleTestCases} onChange={handleChange} className="w-full p-2 bg-slate-900 border border-slate-600 rounded font-mono text-xs text-slate-300" rows="6"></textarea></div>
-                                <div><label className="block mb-1 text-sm text-slate-400">Hidden Test Cases (JSON)</label><textarea name="hiddenTestCases" value={currentQuestion.hiddenTestCases} onChange={handleChange} className="w-full p-2 bg-slate-900 border border-slate-600 rounded font-mono text-xs text-slate-300" rows="6"></textarea></div>
-                                <h3 className="text-xl text-blue-400 font-semibold border-b border-slate-700 pb-2 mt-4">Code Templates</h3>
-                                <div><label className="block mb-1 text-sm text-slate-400">C++ Starter</label><textarea name="starter_cpp" value={currentQuestion.starter_cpp} onChange={handleChange} className="w-full p-2 bg-slate-900 border border-slate-600 rounded font-mono text-xs text-slate-300" rows="4"></textarea></div>
-                                <div><label className="block mb-1 text-sm text-slate-400">Java Starter</label><textarea name="starter_java" value={currentQuestion.starter_java} onChange={handleChange} className="w-full p-2 bg-slate-900 border border-slate-600 rounded font-mono text-xs text-slate-300" rows="4"></textarea></div>
-                                <div><label className="block mb-1 text-sm text-slate-400">Python Starter</label><textarea name="starter_python" value={currentQuestion.starter_python} onChange={handleChange} className="w-full p-2 bg-slate-900 border border-slate-600 rounded font-mono text-xs text-slate-300" rows="4"></textarea></div>
-                                <div><label className="block mb-1 text-sm text-slate-400">C++ Driver</label><textarea name="driver_cpp" value={currentQuestion.driver_cpp} onChange={handleChange} className="w-full p-2 bg-slate-900 border border-slate-600 rounded font-mono text-xs text-slate-300" rows="4"></textarea></div>
-                                <div><label className="block mb-1 text-sm text-slate-400">Java Driver</label><textarea name="driver_java" value={currentQuestion.driver_java} onChange={handleChange} className="w-full p-2 bg-slate-900 border border-slate-600 rounded font-mono text-xs text-slate-300" rows="4"></textarea></div>
-                                <div><label className="block mb-1 text-sm text-slate-400">Python Driver</label><textarea name="driver_python" value={currentQuestion.driver_python} onChange={handleChange} className="w-full p-2 bg-slate-900 border border-slate-600 rounded font-mono text-xs text-slate-300" rows="4"></textarea></div>
+                            <div className="flex flex-col gap-5">
+                                <div className="border-b border-slate-200 pb-2 mb-2">
+                                    <h3 className="text-lg text-indigo-700 font-bold">Test Cases</h3>
+                                </div>
+                                <div>
+                                    <label className="block mb-1.5 text-sm font-semibold text-slate-700">Sample Test Cases (JSON)</label>
+                                    <textarea name="sampleTestCases" value={currentQuestion.sampleTestCases} onChange={handleChange} className="w-full p-3 bg-slate-50 border border-slate-300 rounded-lg font-mono text-sm text-slate-800 focus:bg-white shadow-inner focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all" rows="6"></textarea>
+                                </div>
+                                <div>
+                                    <label className="block mb-1.5 text-sm font-semibold text-slate-700">Hidden Test Cases (JSON)</label>
+                                    <textarea name="hiddenTestCases" value={currentQuestion.hiddenTestCases} onChange={handleChange} className="w-full p-3 bg-slate-50 border border-slate-300 rounded-lg font-mono text-sm text-slate-800 focus:bg-white shadow-inner focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all" rows="6"></textarea>
+                                </div>
+
+                                <div className="border-b border-slate-200 pb-2 mb-2 mt-4">
+                                    <h3 className="text-lg text-indigo-700 font-bold">Code Templates</h3>
+                                </div>
+                                <div>
+                                    <label className="block mb-1.5 text-sm font-semibold text-slate-700">C++ Starter</label>
+                                    <textarea name="starter_cpp" value={currentQuestion.starter_cpp} onChange={handleChange} className="w-full p-3 bg-slate-50 border border-slate-300 rounded-lg font-mono text-xs text-slate-800 shadow-inner focus:bg-white focus:outline-none focus:border-indigo-500 transition-all" rows="4"></textarea>
+                                </div>
+                                <div>
+                                    <label className="block mb-1.5 text-sm font-semibold text-slate-700">Java Starter</label>
+                                    <textarea name="starter_java" value={currentQuestion.starter_java} onChange={handleChange} className="w-full p-3 bg-slate-50 border border-slate-300 rounded-lg font-mono text-xs text-slate-800 shadow-inner focus:bg-white focus:outline-none focus:border-indigo-500 transition-all" rows="4"></textarea>
+                                </div>
+                                <div>
+                                    <label className="block mb-1.5 text-sm font-semibold text-slate-700">Python Starter</label>
+                                    <textarea name="starter_python" value={currentQuestion.starter_python} onChange={handleChange} className="w-full p-3 bg-slate-50 border border-slate-300 rounded-lg font-mono text-xs text-slate-800 shadow-inner focus:bg-white focus:outline-none focus:border-indigo-500 transition-all" rows="4"></textarea>
+                                </div>
                             </div>
+
                             {/* --- Column 3: Solutions --- */}
                             <div className="flex flex-col gap-4">
-                                <div className="flex justify-between items-center border-b border-slate-700 pb-2">
-                                    <h3 className="text-xl text-blue-400 font-semibold">Official Solutions</h3>
-                                    <Button type="button" size="sm" onClick={addSolution}><FaPlus className="mr-2"/>Add</Button>
+                                <div className="flex justify-between items-center border-b border-slate-200 pb-2 mb-2">
+                                    <h3 className="text-lg text-indigo-700 font-bold">Official Solutions</h3>
+                                    <Button type="button" size="sm" onClick={addSolution} className="h-8 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 shadow-sm border border-indigo-200"><FaPlus className="mr-1.5"/>Add</Button>
                                 </div>
-                                <div className="space-y-4 max-h-[70vh] overflow-y-auto">
+                                <div className="space-y-5 max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
                                     {currentQuestion.solutions.map((sol, index) => (
-                                        <div key={index} className="bg-slate-900/50 p-3 rounded-lg border border-slate-600">
-                                            <div className="flex justify-between items-center mb-2">
-                                                <h4 className="font-bold text-slate-300">Solution #{index + 1}</h4>
-                                                <Button type="button" variant="destructive" size="sm" onClick={() => removeSolution(index)}><FaTrash/></Button>
+                                        <div key={index} className="bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm relative group">
+                                            <div className="flex justify-between items-center mb-3">
+                                                <h4 className="font-bold text-slate-700 text-sm">Solution #{index + 1}</h4>
+                                                <button type="button" onClick={() => removeSolution(index)} className="text-rose-500 hover:text-rose-700 p-1.5 hover:bg-rose-50 rounded-lg transition-colors"><FaTrash size={14}/></button>
                                             </div>
-                                            <div className="grid grid-cols-2 gap-2 mb-2">
-                                                <select value={sol.language} onChange={(e) => handleSolutionChange(index, 'language', e.target.value)} className="w-full p-2 bg-slate-700 border border-slate-600 rounded text-sm text-white"><option value="cpp">C++</option><option value="java">Java</option><option value="python">Python</option></select>
-                                                <select value={sol.approach} onChange={(e) => handleSolutionChange(index, 'approach', e.target.value)} className="w-full p-2 bg-slate-700 border border-slate-600 rounded text-sm text-white"><option>Bruteforce</option><option>Better</option><option>Optimal</option></select>
+                                            <div className="grid grid-cols-2 gap-3 mb-3">
+                                                <select value={sol.language} onChange={(e) => handleSolutionChange(index, 'language', e.target.value)} className="w-full p-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:outline-none">
+                                                    <option value="cpp">C++</option>
+                                                    <option value="java">Java</option>
+                                                    <option value="python">Python</option>
+                                                </select>
+                                                <select value={sol.approach} onChange={(e) => handleSolutionChange(index, 'approach', e.target.value)} className="w-full p-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:outline-none">
+                                                    <option>Bruteforce</option>
+                                                    <option>Better</option>
+                                                    <option>Optimal</option>
+                                                </select>
                                             </div>
-                                            <label className="block mb-1 text-sm text-slate-400">Explanation</label>
-                                            <textarea value={sol.explanation} onChange={(e) => handleSolutionChange(index, 'explanation', e.target.value)} className="w-full p-2 bg-slate-700 border border-slate-600 rounded font-mono text-xs text-slate-300" rows="3"></textarea>
-                                            <label className="block mb-1 mt-2 text-sm text-slate-400">Code</label>
-                                            <textarea value={sol.code} onChange={(e) => handleSolutionChange(index, 'code', e.target.value)} className="w-full p-2 bg-slate-700 border border-slate-600 rounded font-mono text-xs text-slate-300" rows="8"></textarea>
+                                            <label className="block mb-1 text-xs font-bold text-slate-500 uppercase tracking-wide">Explanation</label>
+                                            <textarea value={sol.explanation} onChange={(e) => handleSolutionChange(index, 'explanation', e.target.value)} className="w-full p-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:outline-none mb-3" rows="3"></textarea>
+                                            
+                                            <label className="block mb-1 text-xs font-bold text-slate-500 uppercase tracking-wide">Code</label>
+                                            <textarea value={sol.code} onChange={(e) => handleSolutionChange(index, 'code', e.target.value)} className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-lg font-mono text-xs text-slate-200 shadow-inner focus:outline-none focus:ring-1 focus:ring-indigo-500" rows="8"></textarea>
                                         </div>
                                     ))}
+                                    {currentQuestion.solutions.length === 0 && (
+                                        <div className="text-center p-6 border-2 border-dashed border-slate-200 rounded-xl">
+                                            <p className="text-sm text-slate-500">No solutions added yet.</p>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
-                        <div className="flex justify-end space-x-4 pt-4 flex-shrink-0">
-                            <Button type="button" variant="secondary" onClick={handleCloseModal}>Cancel</Button>
-                            <Button type="submit">{isEditing ? 'Update Question' : 'Create Question'}</Button>
+                        <div className="flex justify-end gap-3 pt-5 mt-auto border-t border-slate-200 flex-shrink-0">
+                            <Button type="button" variant="outline" onClick={handleCloseModal} className="border-slate-300 text-slate-700 hover:bg-slate-50">Cancel</Button>
+                            <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-md">{isEditing ? 'Update Question' : 'Create Question'}</Button>
                         </div>
                     </form>
                 </div>
