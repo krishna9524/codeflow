@@ -5,6 +5,16 @@ import Spinner from '@/components/Spinner';
 import { Button } from '@/components/ui/button';
 import { FaArrowRight, FaBook } from 'react-icons/fa';
 
+// 👉 THE FIX: Helper to point image URLs to the backend server
+const getFullImageUrl = (url) => {
+    if (!url) return '';
+    if (url.startsWith('http')) return url; // If it's already a full URL (like Cloudinary), leave it alone
+    
+    // Grab the base URL from env, or default to localhost:5000
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000';
+    return `${baseUrl}${url}`;
+};
+
 const Courses = () => {
     const [courses, setCourses] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -41,7 +51,12 @@ const Courses = () => {
                             <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 h-full flex flex-col">
                                 <div className="h-48 bg-gray-100 relative overflow-hidden">
                                     {course.imageUrl ? (
-                                        <img src={course.imageUrl} alt={course.title} className="w-full h-full object-cover" />
+                                        // 👉 THE FIX: Wrap the course.imageUrl with our new helper
+                                        <img 
+                                            src={getFullImageUrl(course.imageUrl)} 
+                                            alt={course.title} 
+                                            className="w-full h-full object-cover" 
+                                        />
                                     ) : (
                                         <div className="w-full h-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
                                             <FaBook className="text-white/50 text-6xl" />

@@ -2,9 +2,8 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
-  "/problems": "pages/problems.js",
-  "/discuss": "pages/discuss.js",
-  "/network": "pages/network.js",
-  "/messages": "pages/messages.js",
-  "/playground": "pages/playground.js"
+  "/": "pages/index.js",
+  "/admin/dashboard": "pages/admin/dashboard.js",
+  "/courses": "pages/courses.js",
+  "/admin/management": "pages/admin/management.js"
 }
