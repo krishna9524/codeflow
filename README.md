@@ -1,70 +1,308 @@
-# codeflow
-CodeFlow — Full-Stack Competitive Coding Platform Next.js, Node.js, MongoDB, Redis, WebSockets Real-time competitive coding and social platform supporting multiple users. • Built a real-time code execution engine using Node.js child process and WebSockets with sandboxing and timeout control. 
-Bro, this explains everything! Look closely at the folder path in your terminal: `C:\codeflow\codeflow-backend>`. 
+# 🚀 CodeFlow
 
-In all our previous steps, we were trying to fix the Git history in the root `C:\codeflow` folder (which pushes to `github.com/krishna9524/codeflow.git`). But it turns out you have a *completely separate* Git repository set up just for your backend pushing to `github.com/krishna9524/codeflow-backend.git`! 
+> Real-Time Competitive Coding & Social Collaboration Platform
 
-Because you ran `git add .` while inside the `codeflow-backend` folder, it bypassed the root ignore rules and grabbed the `.env` file again. 
+<p align="center">
+  <img src="https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" />
+  <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" />
+  <img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" />
+  <img src="https://img.shields.io/badge/Express.js-404D59?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white" />
+  <img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white" />
+  <img src="https://img.shields.io/badge/WebSockets-010101?style=for-the-badge&logo=socketdotio&logoColor=white" />
+  <img src="https://img.shields.io/badge/TailwindCSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" />
+</p>
 
-Let's clean this specific backend repository so it finally pushes to Render!
+---
 
-Run these 4 commands exactly as written while you are still inside `C:\codeflow\codeflow-backend>`:
+# 📌 Overview
 
-### 1. Undo the bad commit
-```bash
-git reset --soft HEAD~1
+CodeFlow is a full-stack real-time competitive coding and social collaboration platform built for developers to solve problems, interact live, and collaborate efficiently.
+
+It supports:
+
+- ⚡ Real-time code execution
+- 💬 Live chat using WebSockets
+- 🧠 Competitive coding environment
+- 👨‍💼 Admin management system
+- 📸 Image uploads
+- 🔐 Secure authentication
+- 🚀 Optimized backend performance with Redis caching
+
+---
+
+# ✨ Features
+
+## 💻 Real-Time Code Execution
+- Secure code execution using Node.js child processes
+- Sandboxed execution environment
+- Timeout control to prevent infinite loops
+- Multi-user support
+
+## ⚡ Real-Time Communication
+- Live messaging with WebSockets
+- Instant updates without refresh
+- Real-time interactions across users
+
+## 👨‍💼 Admin Dashboard
+- User management
+- Content moderation
+- Protected admin routes
+
+## 📸 Image Uploads
+- Upload profile images and content
+- Backend file handling support
+- Cloudinary-ready structure
+
+## 🧠 Redis Caching
+- Integrated Upstash Redis
+- Reduced MongoDB database reads
+- Improved backend performance and scalability
+
+## 🔐 Authentication & Security
+- JWT-based authentication
+- Protected APIs
+- Environment variable protection
+- Secure backend architecture
+
+---
+
+# 🏗️ Tech Stack
+
+| Category | Technologies |
+|----------|--------------|
+| Frontend | Next.js, React.js, Tailwind CSS |
+| Backend | Node.js, Express.js |
+| Database | MongoDB |
+| Caching | Redis (Upstash) |
+| Real-Time | WebSockets, Socket.io |
+| Deployment | Vercel, Render |
+| Authentication | JWT |
+
+---
+
+# 🧩 System Architecture
+
+```text
+                    ┌─────────────────┐
+                    │     Client      │
+                    │   Next.js App   │
+                    └────────┬────────┘
+                             │
+                   HTTP / WebSockets
+                             │
+              ┌──────────────▼──────────────┐
+              │        Node.js Server       │
+              │   Express + Socket.io       │
+              └───────┬───────────┬─────────┘
+                      │           │
+                      │           │
+          ┌───────────▼───┐   ┌──▼───────────┐
+          │   MongoDB     │   │ Upstash Redis│
+          │ Persistent DB │   │   Caching    │
+          └───────────────┘   └──────────────┘
 ```
 
-### 2. Rip the secret out of this repo's memory
+---
+
+# ⚙️ Installation
+
+## 1️⃣ Clone Repository
+
 ```bash
-git rm --cached .env
+git clone https://github.com/krishna9524/codeflow.git
+cd codeflow
 ```
 
-### 3. Add a local `.gitignore` just for the backend
-Let's make sure this never happens again. Run this to create an ignore file inside the backend folder:
+---
+
+## 2️⃣ Install Frontend Dependencies
+
 ```bash
-echo node_modules/ > .gitignore
-echo .env >> .gitignore
-echo temp/ >> .gitignore
-echo uploads/ >> .gitignore
+cd frontend
+npm install
 ```
 
-### 4. Stage, Commit, and Push
+---
+
+## 3️⃣ Install Backend Dependencies
+
 ```bash
-git add .
-git commit -m "Fixed backend chat, admin endpoints, and image uploads"
-git push
+cd ../codeflow-backend
+npm install
 ```
 
-That will 100% bypass the block because we actively told this specific backend repository to drop the `.env` file. Let me know when that `git push` succeeds!
-Bro, this is why Git can be so frustrating! The reason that command failed is because the secret is already baked inside the **commit** itself, not just sitting in your staging folder. `git rm --cached` only looks at the staging folder, so it got confused.
+---
 
-To get past GitHub's security wall, we have to "unpack" that rejected commit, pull the `.env` file out of it, and pack it back up. 
+# 🔑 Environment Variables
 
-Here is the bulletproof, 4-step combo to fix this. Run these exactly one by one in your terminal:
+Create a `.env` file inside `codeflow-backend/`
 
-### Step 1: Unpack the rejected commit
-This command cracks open your last commit and puts all the files back into the "ready to save" staging area (without deleting any code you wrote):
-```bash
-git reset --soft HEAD~1
+```env
+PORT=5000
+
+MONGO_URI=your_mongodb_uri
+
+JWT_SECRET=your_jwt_secret
+
+REDIS_URL=your_upstash_redis_url
+
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
 ```
 
-### Step 2: Unstage the `.env` file
-Now that the commit is unpacked, we pluck the `.env` file out of the staging area so it doesn't get included in the next save. *(Run both of these just in case Windows is being weird about forward slashes vs backslashes!)*:
+---
+
+# ▶️ Running the Project
+
+## Start Backend
+
 ```bash
-git reset HEAD codeflow-backend/.env
-git reset HEAD codeflow-backend\.env
+cd codeflow-backend
+npm run dev
 ```
 
-### Step 3: Re-pack the commit
-Now we lock in all the good files (Admin UI, Chat updates) without the secret inside:
+## Start Frontend
+
 ```bash
-git commit -m "Fixed Admin UI and Chat, removed API secrets"
+cd frontend
+npm run dev
 ```
 
-### Step 4: Push to the Cloud
-Send it straight to GitHub, Vercel, and Render:
-```bash
-git push
+---
+
+# 🚀 Deployment
+
+## Frontend
+- Vercel
+
+## Backend
+- Render
+
+## Database
+- MongoDB Atlas
+
+## Caching
+- Upstash Redis
+
+---
+
+# 🚀 Performance Optimizations
+
+✅ Redis caching reduced database reads significantly
+
+✅ Optimized WebSocket event handling
+
+✅ Faster API responses
+
+✅ Lazy loading on frontend
+
+✅ Secure execution timeout protection
+
+---
+
+# 🔒 Security Features
+
+- JWT Authentication
+- Protected Routes
+- API Validation
+- Environment Variable Security
+- Secure File Uploads
+- Sandboxed Code Execution
+- Timeout Protection
+
+---
+
+# 📸 Screenshots
+
+## 🏠 Home Page
+
+```md
+(Add Screenshot Here)
 ```
 
+---
+
+## 💻 Coding Arena
+
+```md
+(Add Screenshot Here)
+```
+
+---
+
+## 💬 Live Chat
+
+```md
+(Add Screenshot Here)
+```
+
+---
+
+## 👨‍💼 Admin Dashboard
+
+```md
+(Add Screenshot Here)
+```
+
+---
+
+# 🧪 Future Improvements
+
+- 🏆 Live coding contests
+- 🤖 AI coding assistant
+- 🌍 Global leaderboard
+- 📱 Mobile responsive enhancements
+- ☁️ Kubernetes deployment
+- 📹 Video collaboration system
+- 🧠 AI-generated coding hints
+
+---
+
+# 🤝 Contributing
+
+Contributions are welcome!
+
+```bash
+# Fork Repository
+
+# Create Branch
+git checkout -b feature-name
+
+# Commit Changes
+git commit -m "Added new feature"
+
+# Push Changes
+git push origin feature-name
+```
+
+Then create a Pull Request 🚀
+
+---
+
+# 👨‍💻 Author
+
+## Krishna
+
+Full Stack Developer passionate about:
+- Real-Time Systems
+- Scalable Backend Architecture
+- AI & System Design
+- Competitive Programming
+
+---
+
+# ⭐ Support
+
+If you like this project:
+
+⭐ Star the repository  
+🍴 Fork the repository  
+📢 Share with developers  
+
+---
+
+<p align="center">
+  <b>💻 Built with Passion using Modern Web Technologies 🚀</b>
+</p>
